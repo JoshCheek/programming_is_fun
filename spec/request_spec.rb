@@ -1,7 +1,7 @@
 require_relative 'spec_helper'
 
 RSpec.describe 'Request' do
-  attr_reader :hash
+  attr_accessor :hash
 
   around do |spec|
     begin
@@ -18,7 +18,8 @@ RSpec.describe 'Request' do
                      "Content-Type: application/x-www-form-urlencoded\r\n",
                      "\r\n",
                      "abc=123&def=456"
-      @hash = Request.parse(read_io)
+
+      self.hash = Request.parse(read_io)
       spec.call
     ensure
       read_io.close
@@ -74,10 +75,10 @@ RSpec.describe 'Request' do
                      "Content-Length: 0\r\n",
                      "Content-Type: text/plain\r\n",
                      "\r\n"
-      hash = begin  Request.parse(read_io)
-             ensure read_io.close
-                    write_io.close
-             end
+      self.hash = begin  Request.parse(read_io)
+                  ensure read_io.close
+                         write_io.close
+                  end
 
       expect(hash["REQUEST_METHOD"]).to     eq "GET"
       expect(hash["PATH_INFO"]).to          eq "/users/new"
