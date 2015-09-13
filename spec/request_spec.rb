@@ -20,11 +20,11 @@ RSpec.describe 'Request' do
                      "abc=123&def=456"
 
       allowed_methods = {
-        String      => ['#chomp', '#split', '#to_i', '#upcase', '#gsub', '#==', '#!='],
+        String      => ['#chomp', '#split', '#to_i', '#upcase', '#gsub', '#==', '#!=', '#<<'],
         Hash        => ['#[]=', '#[]', '#each'],
         IO          => ['#gets', '#read'],
         StringIO    => ['.new'],
-        Request     => ['.parse', '.loop'],
+        Request     => ['.parse'],
         Kernel      => ['#loop', '#inspect'],
         BasicObject => ['#initialize'],
       }
