@@ -60,4 +60,23 @@ RSpec.describe 'Request' do
       expect(hash['rack.input'].read).to eq "abc=123&def=456"
     end
   end
+
+  context 'A second test' do
+    example 'just to make sure ;)' do
+      read_io, write_io = IO.pipe
+      write_io.print "GET /users/new HTTP/1.0\r\n",
+                     "Cache-Control: max-age=0\r\n",
+                     "Content-Length: 0\r\n",
+                     "Content-Type: text/plain\r\n",
+                     "\r\n"
+      hash = Request.parse(read_io)
+      expect(hash["REQUEST_METHOD"]).to     eq "GET"
+      expect(hash["PATH_INFO"]).to          eq "/users/new"
+      expect(hash["SERVER_PROTOCOL"]).to    eq "HTTP/1.0"
+      expect(hash["HTTP_CACHE_CONTROL"]).to eq "max-age=0"
+      expect(hash["CONTENT_LENGTH"]).to     eq "0"
+      expect(hash["CONTENT_TYPE"]).to       eq "text/plain"
+      expect(hash["rack.input"].read).to    eq ""
+    end
+  end
 end
