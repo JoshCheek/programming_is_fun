@@ -4,21 +4,26 @@ RSpec.describe 'Request' do
   attr_reader :hash
 
   around do |spec|
-    read_io, write_io = IO.pipe
-    write_io.print "POST /users HTTP/1.1\r\n",
-                   "Host: localhost:8080\r\n",
-                   "Connection: keep-alive\r\n",
-                   "Cache-Control: max-age=0\r\n",
-                   "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n",
-                   "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36\r\n",
-                   "Accept-Encoding: gzip, deflate, sdch\r\n",
-                   "Accept-Language: en-US,en;q=0.8\r\n",
-                   "Content-Length: 15\r\n",
-                   "Content-Type: application/x-www-form-urlencoded\r\n",
-                   "\r\n",
-                   "abc=123&def=456"
-    @hash = Request.parse(read_io)
-    spec.call
+    begin
+      read_io, write_io = IO.pipe
+      write_io.print "POST /users HTTP/1.1\r\n",
+                     "Host: localhost:8080\r\n",
+                     "Connection: keep-alive\r\n",
+                     "Cache-Control: max-age=0\r\n",
+                     "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n",
+                     "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36\r\n",
+                     "Accept-Encoding: gzip, deflate, sdch\r\n",
+                     "Accept-Language: en-US,en;q=0.8\r\n",
+                     "Content-Length: 15\r\n",
+                     "Content-Type: application/x-www-form-urlencoded\r\n",
+                     "\r\n",
+                     "abc=123&def=456"
+      @hash = Request.parse(read_io)
+      spec.call
+    ensure
+      read_io.close
+      write_io.close
+    end
   end
 
   context 'the first line' do
@@ -69,7 +74,11 @@ RSpec.describe 'Request' do
                      "Content-Length: 0\r\n",
                      "Content-Type: text/plain\r\n",
                      "\r\n"
-      hash = Request.parse(read_io)
+      hash = begin  Request.parse(read_io)
+             ensure read_io.close
+                    write_io.close
+             end
+
       expect(hash["REQUEST_METHOD"]).to     eq "GET"
       expect(hash["PATH_INFO"]).to          eq "/users/new"
       expect(hash["SERVER_PROTOCOL"]).to    eq "HTTP/1.0"
