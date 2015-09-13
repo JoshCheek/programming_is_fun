@@ -27,7 +27,7 @@ RSpec.describe 'Request' do
     end
 
     it 'parses the second word as the PATH_INFO' do
-      expect(hash['PATH_INFO']).to eq '/'
+      expect(hash['PATH_INFO']).to eq '/users'
     end
 
     it 'parses the third word as the SERVER_PROTOCOL' do
