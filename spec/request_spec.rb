@@ -4,10 +4,23 @@ RSpec.describe 'Request' do
   attr_reader :hash
 
   around do |spec|
-    File.open File.expand_path('fixtures/request.http', __dir__), 'r' do |file|
-      @hash = Request.parse(file)
-      spec.call
-    end
+    read_io, write_io = IO.pipe
+    write_io.print "POST / HTTP/1.1\r\n",
+                   "Host: localhost:8080\r\n",
+                   "Connection: keep-alive\r\n",
+                   "Cache-Control: max-age=0\r\n",
+                   "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n",
+                   "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36\r\n",
+                   "Accept-Encoding: gzip, deflate, sdch\r\n",
+                   "Accept-Language: en-US,en;q=0.8\r\n",
+                   "Content-Length: 15\r\n",
+                   "Content-Type: application/x-www-form-urlencoded\r\n",
+                   "\r\n",
+                   "abc=123&def=456THE 456 SHOULD BE THE LAST THING READ!\r\n",
+                   "(look around at the things you've found and think about why :)\r\n"
+    write_io.close
+    @hash = Request.parse(read_io)
+    spec.call
   end
 
   context 'the first line' do
