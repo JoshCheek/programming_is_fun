@@ -1,6 +1,6 @@
-require_relative '../lib/programming_is_fun'
+require_relative 'spec_helper'
 
-RSpec.describe Request do
+RSpec.describe 'Request' do
   attr_reader :hash
 
   around do |spec|

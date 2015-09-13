@@ -1,4 +1,4 @@
-require_relative '../lib/programming_is_fun'
+require_relative 'spec_helper'
 
 RSpec.describe 'Response test' do
   it 'creates an HTTP response from a rack response' do
