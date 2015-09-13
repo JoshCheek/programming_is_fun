@@ -73,6 +73,7 @@ end
 1.to_s  # => "1"
 ```
 
+
 Use this approach for Zen
 -------------------------
 
@@ -85,3 +86,10 @@ Use this approach for Zen
   What methods can you call on those? Try calling them?
 * Think about the names of the variables and of the methods, what do those names mean?
 * What things are in the hash? Do you need any of them for other stuff? Can you make any hypotheses about why they are named that?
+
+
+Putting them together
+---------------------
+
+If you complete the two test suites above, and want to do the last bit,
+ping me and I'll add the test for it (you're probably 60% done at this point).
