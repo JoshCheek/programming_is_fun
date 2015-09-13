@@ -20,8 +20,9 @@ Restrictions
 
 You may only use these methods:
 
+
 ```ruby
-# Strings: chomp, split, to_i, upcase, gsub, ==, !=
+# Strings: chomp, split, to_i, upcase, gsub, ==, !=, <<
 "abc\n".chomp           # => "abc"
 "aXbXc".split("X")      # => ["a", "b", "c"]
 "123".to_i              # => 123
@@ -29,6 +30,9 @@ You may only use these methods:
 "aXbXc".gsub("X", " ")  # => "a b c"
 "a" == "a"              # => true
 "a" != "a"              # => false
+string = "a"
+string << "b"           # => "ab"
+string                  # => "ab"
 
 # Hash: []=, [], each
 hash = {'a' => 'b'}        # => {"a"=>"b"}
@@ -50,10 +54,23 @@ read_io.read(5)  # => "ghi\nj"
 read_io.close
 write_io.close
 
-# StringIO: .new, gets, read(num)
+# StringIO: .new
 require 'stringio'
 io = StringIO.new("abc\ndef\nghi\njkl")
 io.read # => "abc\ndef\nghi\njkl"
+
+# Array: each
+['a', 'b', 'c'].each do |char|
+  char  # => "a", "b", "c"
+end
+
+# Any object: loop, to_s
+loop do
+  1  # => 1
+  break if "a" == "a"
+end
+
+1.to_s  # => "1"
 ```
 
 Use this approach for Zen

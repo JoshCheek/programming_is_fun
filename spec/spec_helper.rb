@@ -14,7 +14,20 @@ rescue SyntaxError => e
   explain_error "Looks like your code isn't valid Ruby. Try commenting out the last thing you did until it doesn't blow up for this reason, then look at the commented portion to figure out why! The actual error message is is: \n\n#{e.message}"
 end
 
-def restrict_methods(allowed_methods, &block)
+def default_allowed_methods
+  { String      => ['#chomp', '#split', '#to_i', '#upcase', '#gsub', '#==', '#!=', '#<<'],
+    Hash        => ['#[]=', '#[]', '#each'],
+    IO          => ['#gets', '#read'],
+    StringIO    => ['.new'],
+    Request     => ['.parse'],
+    Response    => ['.to_http'],
+    Kernel      => ['#loop', '#inspect', '#to_s'],
+    Array       => ['#each'],
+    BasicObject => ['#initialize'],
+  }
+end
+
+def restrict_methods(allowed_methods=default_allowed_methods, &block)
   within_pry = false
 
   tp = TracePoint.new :c_call, :c_return, :call, :return do |tp|

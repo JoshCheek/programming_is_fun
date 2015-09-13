@@ -19,17 +19,7 @@ RSpec.describe 'Request' do
                      "\r\n",
                      "abc=123&def=456"
 
-      allowed_methods = {
-        String      => ['#chomp', '#split', '#to_i', '#upcase', '#gsub', '#==', '#!=', '#<<'],
-        Hash        => ['#[]=', '#[]', '#each'],
-        IO          => ['#gets', '#read'],
-        StringIO    => ['.new'],
-        Request     => ['.parse'],
-        Kernel      => ['#loop', '#inspect'],
-        BasicObject => ['#initialize'],
-      }
-
-      restrict_methods allowed_methods do
+      restrict_methods do
         self.hash = Request.parse(read_io)
       end
 
