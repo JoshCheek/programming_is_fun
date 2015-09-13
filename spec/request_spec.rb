@@ -5,7 +5,7 @@ RSpec.describe 'Request' do
 
   around do |spec|
     read_io, write_io = IO.pipe
-    write_io.print "POST / HTTP/1.1\r\n",
+    write_io.print "POST /users HTTP/1.1\r\n",
                    "Host: localhost:8080\r\n",
                    "Connection: keep-alive\r\n",
                    "Cache-Control: max-age=0\r\n",
@@ -16,29 +16,36 @@ RSpec.describe 'Request' do
                    "Content-Length: 15\r\n",
                    "Content-Type: application/x-www-form-urlencoded\r\n",
                    "\r\n",
-                   "abc=123&def=456THE 456 SHOULD BE THE LAST THING READ!\r\n",
-                   "(look around at the things you've found and think about why :)\r\n"
-    write_io.close
+                   "abc=123&def=456"
     @hash = Request.parse(read_io)
     spec.call
   end
 
   context 'the first line' do
-    it 'parses the method as REQUEST_METHOD' do
+    it 'parses the first word as the REQUEST_METHOD' do
       expect(hash['REQUEST_METHOD']).to eq 'POST'
     end
 
-    it 'parses the path as PATH_INFO' do
+    it 'parses the second word as the PATH_INFO' do
       expect(hash['PATH_INFO']).to eq '/'
     end
 
-    it 'parses the protocol as SERVER_PROTOCOL' do
+    it 'parses the third word as the SERVER_PROTOCOL' do
       expect(hash['SERVER_PROTOCOL']).to eq 'HTTP/1.1'
     end
   end
 
-  context 'the headers' do
-    specify 'are upcased, prepended with "HTTP_", and have their dashes turned to underscores' do
+  context 'the second line through the empty line' do
+    specify 'take the form "Key: Value", and are added to the hash' do
+      host = hash['Host'] || hash['HOST'] || hash['HTTP_HOST']
+      expect(host).to eq "localhost:8080"
+    end
+
+    specify 'the keys have their dashes turned to underscores' do
+      expect(hash['HTTP_HOST']).to eq "localhost:8080"
+    end
+
+    specify 'the keys are upcased, prepended with "HTTP_", and have their dashes turned to underscores' do
       expect(hash['HTTP_ACCEPT_LANGUAGE']).to eq "en-US,en;q=0.8"
     end
 
@@ -48,8 +55,8 @@ RSpec.describe 'Request' do
     end
   end
 
-  context 'the body' do
-    it 'is an io object at the key "rack.input"pointing at the first character of the body' do
+  context 'everything after the empty line' do
+    it 'is an io object that can be read in at the key "rack.input"' do
       expect(hash['rack.input'].read).to eq "abc=123&def=456"
     end
   end
