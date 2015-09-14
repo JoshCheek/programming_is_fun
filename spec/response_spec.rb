@@ -2,7 +2,7 @@ require_relative 'spec_helper'
 
 RSpec.describe 'Response test' do
   it 'creates an HTTP response, given a status code, hash of headers, and array of strings for the body' do
-    actual = restrict_methods do
+    actual = restrict_methods called_from: 'response' do
       status_code = 404
       headers     = {'this-is-a-header' => 'and-a-value'}
       body        = ["This is", " a body"]

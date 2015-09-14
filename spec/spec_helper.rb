@@ -1,40 +1,53 @@
 # help the module1 students get bootstrapped
 def self.explain_error(explanation)
   $stderr.puts explanation
-  $stdin.gets
   exit! 1
 end
 
-begin
-  path = 'lib/programming_is_fun'
-  require_relative "../#{path}"
-rescue LoadError
-  explain_error "We can't find the file that is supposed to have your code in it (#{path}.rb)... press return and then go make it!"
-rescue SyntaxError => e
-  explain_error "Looks like your code isn't valid Ruby. Try commenting out the last thing you did until it doesn't blow up for this reason, then look at the commented portion to figure out why! The actual error message is is: \n\n#{e.message}"
+['lib/request', 'lib/response'].each do |path|
+  begin
+    require_relative "../#{path}"
+  rescue LoadError
+    explain_error "We can't find the file that is supposed to have your code in it (#{path}.rb)... press return and then go make it!"
+  rescue SyntaxError => e
+    explain_error "Looks like your code isn't valid Ruby. Try commenting out the last thing you did until it doesn't blow up for this reason, then look at the commented portion to figure out why! The actual error message is is: \n\n#{e.message}"
+  end
+end
+
+def all_methods(klass)
+  instance_methods = klass.instance_methods + klass.private_instance_methods + klass.protected_instance_methods
+  methods          = klass.methods + klass.private_methods + klass.protected_methods
+  methods.sort.map { |m| ".#{m}" } + instance_methods.sort.map { |m| "##{m}" }
 end
 
 def default_allowed_methods
   { String      => ['#chomp', '#split', '#to_i', '#upcase', '#gsub', '#==', '#!=', '#<<'],
     Hash        => ['#[]=', '#[]', '#each'],
     IO          => ['#gets', '#read'],
-    StringIO    => ['.new'],
-    Request     =>  Request.methods.map { |m| ".#{m}" } +  Request.instance_methods.map { |m| "##{m}" },
-    Response    => Response.methods.map { |m| ".#{m}" } + Response.instance_methods.map { |m| "##{m}" },
+    Class       => ['#new'],
+    Request     => all_methods(Request),
+    Response    => all_methods(Response),
     Kernel      => ['#loop', '#inspect', '#to_s'],
     Array       => ['#each'],
     BasicObject => ['#initialize'],
   }
 end
 
-def restrict_methods(allowed_methods=default_allowed_methods, &block)
+def is_exception?(obj)
+  obj.kind_of?(Exception) || (obj.kind_of?(Class) && obj < Exception)
+end
+
+require 'pathname'
+def restrict_methods(allowed_methods=default_allowed_methods, called_from:nil, &block)
   within_pry = false
 
   tp = TracePoint.new :c_call, :c_return, :call, :return do |tp|
     if tp.event == :return || tp.event == :c_return
       within_pry = false if tp.method_id == :pry
       next
-    elsif within_pry
+    elsif within_pry || is_exception?(tp.self)
+      next
+    elsif called_from && Pathname.new(called_from) != Pathname.new(tp.path).basename.sub_ext('')
       next
     else
       if [:binding, :pry, :__method__].include? tp.method_id
@@ -43,7 +56,13 @@ def restrict_methods(allowed_methods=default_allowed_methods, &block)
       next if within_pry
     end
 
-    instance_methods = tp.self.class.ancestors.flat_map do |ancestor|
+    klass = nil
+    begin klass = tp.self.singleton_class
+    rescue TypeError # eg no singleton for Fixnum
+      klass = tp.self.class
+    end
+
+    instance_methods = klass.ancestors.flat_map do |ancestor|
       allowed_methods
         .fetch(ancestor, [])
         .select { |m| m.to_s.start_with? '#' }

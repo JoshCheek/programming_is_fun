@@ -19,7 +19,7 @@ RSpec.describe 'Request' do
                      "\r\n",
                      "abc=123&def=456"
 
-      restrict_methods do
+      restrict_methods called_from: 'request' do
         self.hash = Request.parse(read_io)
       end
 
@@ -54,10 +54,16 @@ RSpec.describe 'Request' do
     end
 
     specify 'the keys have their dashes turned to underscores' do
-      expect(hash['HTTP_HOST']).to eq "localhost:8080"
+      cache_control = hash['Cache_Control'] || hash['CACHE_CONTROL'] || hash['HTTP_CACHE_CONTROL']
+      expect(cache_control).to eq "max-age=0"
     end
 
-    specify 'the keys are upcased, prepended with "HTTP_", and have their dashes turned to underscores' do
+    specify 'the keys are upcased' do
+      cache_control = hash['CACHE_CONTROL'] || hash['HTTP_CACHE_CONTROL']
+      expect(cache_control).to eq "max-age=0"
+    end
+
+    specify 'the keys are prepended with "HTTP_"' do
       expect(hash['HTTP_ACCEPT_LANGUAGE']).to eq "en-US,en;q=0.8"
     end
 
