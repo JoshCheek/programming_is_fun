@@ -59,10 +59,14 @@ require 'stringio'
 io = StringIO.new("abc\ndef\nghi\njkl")
 io.read # => "abc\ndef\nghi\njkl"
 
-# Array: each
-['a', 'b', 'c'].each do |char|
+# Array: each, []
+array = ['a', 'b', 'c']
+
+array.each do |char|
   char  # => "a", "b", "c"
 end
+
+array[0] # => "a"
 
 # Any object: loop, to_s
 loop do
