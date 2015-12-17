@@ -4,14 +4,13 @@ def self.explain_error(explanation)
   exit! 1
 end
 
-['lib/request', 'lib/response'].each do |path|
-  begin
-    require_relative "../#{path}"
-  rescue LoadError
-    explain_error "We can't find the file that is supposed to have your code in it (#{path}.rb)... press return and then go make it!"
-  rescue SyntaxError => e
-    explain_error "Looks like your code isn't valid Ruby. Try commenting out the last thing you did until it doesn't blow up for this reason, then look at the commented portion to figure out why! The actual error message is is: \n\n#{e.message}"
-  end
+begin
+  path = "lib/request"
+  require_relative "../#{path}"
+rescue LoadError
+  explain_error "We can't find the file that is supposed to have your code in it (#{path}.rb)... press return and then go make it!"
+rescue SyntaxError => e
+  explain_error "Looks like your code isn't valid Ruby. Try commenting out the last thing you did until it doesn't blow up for this reason, then look at the commented portion to figure out why! The actual error message is is: \n\n#{e.message}"
 end
 
 def all_methods(klass)
@@ -26,10 +25,9 @@ def default_allowed_methods
     IO          => ['#gets', '#read'],
     Class       => ['#new'],
     Request     => all_methods(Request),
-    Response    => all_methods(Response),
     Kernel      => ['#loop', '#inspect', '#to_s'],
     Array       => ['#each'],
-    BasicObject => ['#initialize'],
+    BasicObject => ['#initialize', '#method_missing'],
   }
 end
 
